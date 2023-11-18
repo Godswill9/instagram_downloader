@@ -1,0 +1,135 @@
+* {
+  margin: 0px;
+  padding: 0px;
+  box-sizing: border-box;
+}
+
+.downloadContentSection {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 3em;
+}
+.downloadContentSection .loader {
+  width: 10em;
+  height: 10em;
+  margin: 2em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  display: none;
+}
+.downloadContentSection .loader span {
+  font-weight: bold;
+  font-size: 20px;
+  color: white;
+}
+.downloadContentSection .loader .loader2 {
+  display: none;
+  font-weight: bold;
+  font-size: 20px;
+  color: rgb(19, 249, 157);
+}
+.downloadContentSection .inner {
+  width: 80%;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  height: -moz-fit-content;
+  height: fit-content;
+  display: none;
+}
+.downloadContentSection .inner .file {
+  height: 14em;
+  width: 14em;
+  position: relative;
+  margin: 5px;
+  flex-shrink: 0;
+}
+.downloadContentSection .inner .file .wrapper {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  background-color: rgba(255, 255, 255, 0.125);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+}
+.downloadContentSection .inner .file .wrapper .downloadBut {
+  position: absolute;
+  top: 120%;
+  transition: 0.2s ease-in-out;
+}
+.downloadContentSection .inner .file .wrapper:hover > .downloadBut {
+  top: 40%;
+}
+.downloadContentSection .inner .file .downloadBut:hover {
+  box-shadow: 0px 0px 10px white;
+  border-radius: 5px;
+}
+.downloadContentSection .inner .file img {
+  height: 100%;
+  width: 100%;
+}
+
+.container {
+  position: relative;
+}
+.container .notice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  background-color: white;
+  border-radius: 10px;
+  min-height: 9em;
+  overflow: hidden;
+  width: 19em;
+  display: none;
+}
+.container .notice h4 {
+  width: 100%;
+  padding: 5px;
+  background-color: black;
+  color: white;
+  text-align: center;
+}
+.container .notice .message {
+  margin: 6px;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  font-weight: bold;
+  text-align: center;
+}
+.container .notice button {
+  background-color: black;
+  color: white;
+  width: 50%;
+  padding: 5px;
+  height: 2.4em;
+  margin: 4px;
+}
+.container .wrapper {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0%;
+  left: 0%;
+  background-color: rgba(0, 0, 0, 0.857);
+  display: none;
+}
+.container .show {
+  display: flex;
+}/*# sourceMappingURL=style2.css.map */
