@@ -69,7 +69,7 @@ stories.addEventListener("click", () => {
   InstagramReels.style.display = "none";
   IGTVvideo.style.display = "none";
   innerFileCont?.classList.remove("show");
-  setTitle("stories");
+  setTitle("story");
 });
 igtv.addEventListener("click", () => {
   IGTVvideo.style.display = "block";
@@ -194,59 +194,87 @@ function downloadFile(url, image) {
 
 fetchLinkButton.addEventListener("click", async () => {
   const val = localStorage.getItem("title");
-  if (urlInputLink.value === "") {
-    // Display an error message for empty input
-    noticeMessage.textContent = "Empty! Input URL media link";
-    notice.classList.add("show");
-    wrapper.classList.add("show");
+  const inputURL = urlInputLink.value.trim();
+
+  if (inputURL === "") {
+    displayError("Empty! Input URL media link");
     return;
-  } else {
-    const check_url = urlInputLink.value.replace(/ /g, "");
-    const re =
-      /^(http[s]?:\/\/){0,1}(www\.){0,1}[a-zA-Z0-9\.\-]+\.[a-zA-Z]{2,5}[\.]{0,1}/;
-    if (!re.test(check_url)) {
-      // Display an error message for an invalid URL
-      noticeMessage.textContent = "Invalid URL media link";
-      notice.classList.add("show");
-      wrapper.classList.add("show");
-      return;
-    } else {
-      try {
-        loader2.style.display = "none";
-        loaderSpan.style.display = "block";
-        loader.classList.add("show");
-        // Send the user input URL for data retrieval
-        await sendUrlTest(urlInputLink.value).then((res) => {
-          const data = res.parsedData;
-          if (data.error) {
-            noticeMessage.textContent = "Check the link, refresh and try again";
-            notice.classList.add("show");
-            wrapper.classList.add("show");
-            throw new Error("Network response was not ok");
-          } else {
-            // console.log(data);
-            loader2.style.display = "block";
-            loaderSpan.style.display = "none";
-            // innerFileCont.innerHTML = "";
-            if (val === "video") {
-              getVid(data);
-            } else if (val === "images") {
-              getImage(data);
-            } else if (val === "reels") {
-              getReels(data);
-            } else if (val === "igtv") {
-              getIGTV(data);
-            }
-          }
-        });
-      } catch (error) {
+  }
+
+  if (!isValidURL(inputURL)) {
+    displayError("Invalid URL media link");
+    return;
+  }
+
+  try {
+    loader2.style.display = "none";
+    loaderSpan.style.display = "block";
+    loader.classList.add("show");
+
+    if (val === "story") {
+      const storyData = await sendStory(inputURL);
+      if (storyData.parsedData.data) {
+        loader2.style.display = "block";
+        loaderSpan.style.display = "none";
+        var newArr = extractFromStory(storyData.parsedData.data.items);
+        sendReelDetails(newArr, "downloadReel");
+      } else {
+        noticeMessage.textContent = "Private account or invalid url";
+        notice.classList.add("show");
+        wrapper.classList.add("show");
         loader.classList.remove("show");
-        // console.log(error);
-        throw error; // Rethrow the error to be caught in your original code
       }
+      // Handle story data as needed
+      return;
     }
+
+    const responseData = await sendUrlTest(inputURL);
+    // console.log(responseData);
+    const data = responseData.parsedData;
+
+    if (data.error) {
+      displayError("Check the link, refresh and try again");
+      throw new Error("Network response was not ok");
+    }
+
+    loader2.style.display = "block";
+    loaderSpan.style.display = "none";
+
+    switch (val) {
+      case "video":
+        getVid(data);
+        break;
+      case "images":
+        getImage(data);
+        break;
+      case "reels":
+        getReels(data);
+        break;
+      case "igtv":
+        getIGTV(data);
+        break;
+      default:
+        // Handle other cases if needed
+        break;
+    }
+  } catch (error) {
+    loader.classList.remove("show");
+    console.error(error);
+    throw error; // Rethrow the error to be caught in your original code
   }
 });
+
+function isValidURL(url) {
+  const re =
+    /^(http[s]?:\/\/){0,1}(www\.){0,1}[a-zA-Z0-9\.\-]+\.[a-zA-Z]{2,5}[\.]{0,1}/;
+  return re.test(url.replace(/ /g, ""));
+}
+
+function displayError(message) {
+  noticeMessage.textContent = message;
+  notice.classList.add("show");
+  wrapper.classList.add("show");
+}
 
 function renderFileHTML(fileUrl, fileCover, type = "") {
   var fileFormat;
@@ -298,7 +326,8 @@ function renderFileHTML(fileUrl, fileCover, type = "") {
 
 const sendDetailsVideo = (url, img, route) => {
   // fetch(`https://instagram-downloader.onrender.com/api/${route}`, {
-  fetch(`http://localhost:8088/api/${route}`, {
+  fetch(`https://instagram-backend-kcm3.onrender.com/api/${route}`, {
+    // fetch(`http://localhost:8088/api/${route}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -336,7 +365,8 @@ const sendDetailsVideo = (url, img, route) => {
 };
 const sendDetailsImages = (url, img, route) => {
   // fetch(`https://instagram-downloader.onrender.com/api/${route}`, {
-  fetch(`http://localhost:8088/api/${route}`, {
+  fetch(`https://instagram-backend-kcm3.onrender.com/api/${route}`, {
+    // fetch(`http://localhost:8088/api/${route}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -400,10 +430,8 @@ function getIGTV(data) {
     videoURL = jsonData?.graphql?.shortcode_media?.video_url;
     videoThumbnail = jsonData?.graphql?.shortcode_media?.display_url;
   } else if (jsonData.items) {
-    videoURL = jsonData?.items?.[0]?.video_versions?.[1]?.url;
-    videoThumbnail =
-      jsonData?.items?.[0]?.image_versions2?.additional_candidates?.first_frame
-        .url;
+    videoURL = jsonData?.items?.[0]?.video_versions?.[0]?.url;
+    videoThumbnail = jsonData?.items?.[0]?.image_versions2?.candidates[0].url;
   } else {
     // show_snackbar(2);
   }
@@ -420,7 +448,7 @@ function getVid(data) {
     videoURL = jsonData?.graphql?.shortcode_media?.video_url;
     videoThumbnail = jsonData?.graphql?.shortcode_media?.display_url;
   } else if (jsonData.items) {
-    videoURL = jsonData?.items?.[0]?.video_versions?.[1]?.url;
+    videoURL = jsonData?.items?.[0]?.video_versions?.[0]?.url;
     videoThumbnail =
       jsonData?.items?.[0]?.image_versions2?.additional_candidates?.first_frame
         .url;
@@ -509,10 +537,27 @@ function extractFromArr2(arr) {
 
   return newArray;
 }
+function extractFromStory(arr) {
+  if (!Array.isArray(arr)) {
+    throw new Error("Input must be an array of objects");
+  }
+  const newArray = arr.map((obj) => {
+    if (typeof obj === "object" && obj !== null) {
+      const { video_url, thumbnail_url } = obj;
+      // Return a new object with only 'video_url' and 'img'
+      return { video_url, display_url: thumbnail_url };
+    } else {
+      return {};
+    }
+  });
+
+  return newArray;
+}
 
 const sendReelDetails = (url, route) => {
   // fetch(`https://instagram-downloader.onrender.com/api/${route}`, {
-  fetch(`http://localhost:8088/api/${route}`, {
+  fetch(`https://instagram-backend-kcm3.onrender.com/api/${route}`, {
+    // fetch(`http://localhost:8088/api/${route}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -563,7 +608,8 @@ pasteBut1.addEventListener("click", (e) => {
 const sendUrlTest = (url) => {
   // Return the Promise returned by fetch
   // return fetch("https://python-backend-lr4t.onrender.com/api/downloadFile", {
-  return fetch("http://127.0.0.1:8088/api/downloadFile", {
+  return fetch("https://instagram-backend-kcm3.onrender.com/api/downloadFile", {
+    // return fetch("http://127.0.0.1:8088/api/downloadFile", {
     // return fetch("https://instagram-downloader.onrender.com/api/downloadFile", {
     method: "POST",
     mode: "cors", // Specify 'cors' mode
@@ -580,7 +626,50 @@ const sendUrlTest = (url) => {
         response.status === 401 ||
         response.status === 500
       ) {
-        noticeMessage.textContent = "Not authenticated, therefore disallowed";
+        noticeMessage.textContent = "Error in media retrieval";
+        notice.classList.add("show");
+        wrapper.classList.add("show");
+        throw new Error("Not authenticated");
+      } else if (response.ok) {
+        return response.json(); // Return the response data
+      } else {
+        // throw new Error("Network response was not ok");
+      }
+    })
+    .catch((error) => {
+      loader.classList.remove("show");
+      noticeMessage.textContent = "Check the link, refresh and try again";
+      notice.classList.add("show");
+      wrapper.classList.add("show");
+      // console.log(error);
+      throw error; // Rethrow the error to be caught in your original code
+    });
+};
+const sendStory = (url) => {
+  // Return the Promise returned by fetch
+  // return fetch("https://python-backend-lr4t.onrender.com/api/downloadFile", {
+  return fetch(
+    "https://instagram-backend-kcm3.onrender.com/api/downloadStory",
+    {
+      // return fetch("http://127.0.0.1:8088/api/downloadStory", {
+      // return fetch("https://instagram-downloader.onrender.com/api/downloadFile", {
+      method: "POST",
+      mode: "cors", // Specify 'cors' mode
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ url: url }),
+    }
+  )
+    .then((response) => {
+      // console.log(response.status);
+      if (
+        response.status === 403 ||
+        response.status === 401 ||
+        response.status === 500
+      ) {
+        noticeMessage.textContent = "Error in media retrieval";
         notice.classList.add("show");
         wrapper.classList.add("show");
         throw new Error("Not authenticated");
@@ -631,14 +720,18 @@ async function getContentFromDynamicURL(dynamic_url) {
 }
 
 const anotherWayDownload = (url) => {
-  return fetch("http://localhost:8088/api/downloadAnotherWay", {
-    // return fetch("https://instagram-downloader.onrender.com/api/downloadFile", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ url: url }),
-  })
+  return fetch(
+    "https://instagram-backend-kcm3.onrender.com/api/downloadAnotherWay",
+    {
+      // return fetch("http://localhost:8088/api/downloadAnotherWay", {
+      // return fetch("https://instagram-downloader.onrender.com/api/downloadFile", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ url: url }),
+    }
+  )
     .then((response) => {
       if (response.ok) {
         return response.json(); // Return the response data

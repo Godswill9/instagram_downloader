@@ -178,7 +178,8 @@ function extractFromArr2(arr) {
 
 const sendDetailsVideo = (url, img, route) => {
   // fetch(`https://instagram-downloader.onrender.com/api/${route}`, {
-  fetch(`http://localhost:8088/api/${route}`, {
+  // fetch(`http://localhost:8088/api/${route}`, {
+  fetch(`https://instagram-backend-kcm3.onrender.com/api/${route}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -230,7 +231,8 @@ pasteBut.addEventListener("click", (e) => {
 
 const sendUrlTest = (url) => {
   // Return the Promise returned by fetch
-  return fetch("http://localhost:8088/api/downloadFile", {
+  // return fetch("http://localhost:8088/api/downloadFile", {
+  return fetch("https://instagram-backend-kcm3.onrender.com/api/downloadFile", {
     //   return fetch("https://instagram-downloader.onrender.com/api/downloadFile", {
     method: "POST",
     headers: {
