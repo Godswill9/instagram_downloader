@@ -141,6 +141,7 @@ function getReels(data) {
   } else {
   }
   if (newArr) {
+    console.log(newArr);
     sendReelDetails(newArr, "downloadReel");
   }
 }
